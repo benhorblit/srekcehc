@@ -5,7 +5,7 @@
 // The cookie never stores the password itself, only a SHA-256 hash of it.
 // Valid for 1 month.
 
-const PASSWORD = "{{SITE_PASSWORD}}";
+const PASSWORD = "tenet";
 const COOKIE_NAME = "site_auth";
 const MAX_AGE = 60 * 60 * 24 * 30; // 1 month
 

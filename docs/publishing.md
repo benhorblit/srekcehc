@@ -1,21 +1,14 @@
 # What reaches the web
 
-<!-- bootstrap:static -->
-`site/` is the Cloudflare Pages output directory and there is no build:
-every file in it is published as is, and nothing outside it ever is.
-<!-- /bootstrap -->
-<!-- bootstrap:build -->
 `scripts/build.sh` is the Pages build command. It writes `dist/`, the
 output directory, by copying files from `site/` by name. Nothing reaches
 the web until it is named there, so a file in `site/` the script doesn't
 copy stays unpublished. Never replace the list with `cp -R`.
-<!-- /bootstrap -->
 
 `wrangler.toml` sets which directory gets published. Never change it:
 Cloudflare deploys a branch the moment it's pushed, before anyone
 reviews it, so a wrong value goes public right away.
 
-<!-- bootstrap:password -->
 ## The password gate
 
 `functions/_middleware.js` runs on every request and serves nothing but
@@ -27,7 +20,6 @@ that must log in to read "keep out" never reads it.
 
 `_headers` only applies to static assets, so the gate's own responses
 carry the opt-out headers by hand. Keep them in step.
-<!-- /bootstrap -->
 
 ## The crawler opt-out
 

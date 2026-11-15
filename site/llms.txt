@@ -1,4 +1,4 @@
-# {{SITE_NAME}}
+# srekcehc
 
 > Closed to automated access. Nothing on this domain is available to AI or
 > LLM crawlers, agents, assistants or scrapers, and no part of it may be
