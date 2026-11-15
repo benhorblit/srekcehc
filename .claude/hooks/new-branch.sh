@@ -44,8 +44,8 @@ blocked=$(new_branches | grep -vxE 'preview|internal/.+' | grep -vxFf "$tried")
 printf '%s\n' "$attempt" "$blocked" >>"$tried"
 cat >&2 <<MSG
 Blocked: this creates $(paste -sd, <<<"$blocked" | sed 's/,/, /g') on origin.
-Pushed branches are permanent, and every one outside internal/ gets a public Cloudflare preview.
-Changes to published files go on \`preview\`; all other work goes on an \`internal/\` branch.
-Check that this follows those rules. If you're sure it does, rerun it.
+Work off \`preview\` unless the task doesn't change deployed files (then use an \`internal/\` branch) or the user said otherwise.
+If \`preview\` exists and isn't equal to the latest \`master\`, use AskUserQuestion to ask whether to work off \`preview\`, create a new branch, or something else.
+If you're sure this is right, rerun.
 MSG
 exit 2
