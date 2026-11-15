@@ -1,0 +1,12 @@
+# Applied by Cloudflare Pages to every static response. Why each line is
+# here: docs/publishing.md. tdm-reservation must agree with
+# /.well-known/tdmrep.json and the page meta tags.
+/*
+  Content-Signal: search=no, ai-input=no, ai-train=no, use=immediate
+  Content-Usage: train-ai=n, search=n
+  tdm-reservation: 1
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, notranslate, noimageindex
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  Content-Security-Policy: default-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  ! Access-Control-Allow-Origin

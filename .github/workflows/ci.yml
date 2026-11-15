@@ -1,0 +1,111 @@
+# Checks every PR against docs/publishing.md: wrangler.toml publishes the
+# right directory, the functions parse, and everything published keeps
+# crawlers out. Each job is its own check on the PR.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Adds pipefail to the default bash -e.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  config:
+    name: ⚙️ Pages config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check the output directory
+        run: |
+          out=site
+          [ -f scripts/build.sh ] && out=dist
+          if ! grep -qx "pages_build_output_dir = \"$out\"" wrangler.toml; then
+            echo "::error file=wrangler.toml,title=Wrong output directory::pages_build_output_dir must be \"$out\""
+            exit 1
+          fi
+
+  functions:
+    name: 🧩 Functions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Read as a module from stdin: given a .js path, `node --check`
+      # passes an ES module even when it has a syntax error.
+      - name: Check every function parses
+        run: |
+          shopt -s globstar nullglob
+          files=(functions/**/*.{js,mjs})
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::notice title=Functions::No functions to check."
+            exit 0
+          fi
+          fail=0
+          for f in "${files[@]}"; do
+            if ! out=$(node --input-type=module --check < "$f" 2>&1); then
+              line=$(sed -n '1s/^\[stdin\]:\([0-9]*\).*/\1/p' <<< "$out")
+              echo "::error file=$f,line=$line,title=Syntax error::$(grep -m1 Error <<< "$out")"
+              fail=1
+            fi
+          done
+          exit $fail
+
+  published:
+    name: 📦 Published files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # The Cloudflare Pages build command, when there is one.
+      - name: Build
+        run: |
+          out=site
+          if [ -f scripts/build.sh ]; then bash scripts/build.sh; out=dist; fi
+          echo "OUT=$out" >> "$GITHUB_ENV"
+
+      # Exactly what goes public, on the run's summary page.
+      - name: List what gets published
+        run: |
+          {
+            echo "### 📦 \`$OUT/\`"
+            echo
+            echo '| File | Bytes |'
+            echo '| --- | ---: |'
+            find "$OUT" -type f -printf '| `%P` | %s |\n' | sort
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # One step, so a single run reports every problem. Content errors
+      # point at site/, the source of every published file.
+      - name: Check the crawler opt-out
+        run: |
+          fail=0
+          err() { echo "::error ${2:+file=site/$2,}title=Crawler opt-out::$1"; fail=1; }
+
+          for f in index.html 404.html robots.txt ai.txt llms.txt _headers \
+                   .well-known/ai.txt .well-known/tdmrep.json; do
+            [ -f "$OUT/$f" ] || err "$OUT/$f is missing"
+          done
+
+          # A missing file is reported once, above, not again here.
+          needs() { [ ! -f "$OUT/$1" ] || grep -q "$2" "$OUT/$1" || err "$1 lacks $3" "$1"; }
+          needs robots.txt '^Disallow: /$' 'Disallow: /'
+          needs _headers 'X-Robots-Tag: noindex' 'X-Robots-Tag'
+          needs _headers 'tdm-reservation: 1' 'tdm-reservation'
+
+          while read -r page; do
+            needs "$page" '<meta name="robots" content="noindex' 'the robots meta tag'
+            needs "$page" '<meta name="tdm-reservation" content="1">' 'the tdm-reservation meta tag'
+          done < <(find "$OUT" -name '*.html' -printf '%P\n')
+          exit $fail

@@ -1,0 +1,14 @@
+# Site-wide opt-out for AI and LLM crawlers, agents, scrapers and any
+# other automated retrieval.
+#
+# No content on this domain may be crawled, scraped, indexed, cached,
+# retrieved, summarized, or used as input to or training data for any
+# model, at training time or at inference time. This applies to the whole
+# site, to every user agent, and to retrieval performed on behalf of a
+# human user as much as to unattended crawling.
+#
+# This is a refusal of permission, not a ranking preference. Ignoring it
+# is not a technical detail; it is access without permission.
+
+User-Agent: *
+Disallow: /
