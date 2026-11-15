@@ -56,6 +56,22 @@ does now.
   flip")?
 - Where are the bounds, and are they the same for both players?
 
+## Starting pieces
+
+**Idea:** more than one piece each, but far fewer than a full board.
+More pieces give more ways to change the board by deliberate
+maneuvering.
+
+**Open:**
+- How many?
+- Which piece moves? Now each player moves only their newest piece.
+  With several, a player picks one per round.
+- What do the others do that round? They'd stay put and record their
+  square at the new tick, or they'd vanish from it.
+- Placement. Pieces on rows of opposite parity can be adjacent; pieces
+  on rows of the same parity can compete for squares (see "Players
+  never meet" below). Mixing rows gives both.
+
 ## Playability
 
 - **History scrubber:** look at any tick, past or future, without
