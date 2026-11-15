@@ -3,7 +3,7 @@
 #
 # The first time in a session that Claude tries to create a branch on origin
 # that isn't `preview` or under `internal/`, block it with a reminder of the
-# branch rules. Rerunning the same attempt passes.
+# branch rules. Any later attempt at that branch passes.
 
 input=$(cat)
 field() { jq -r "$1 // empty" <<<"$input"; }
@@ -11,7 +11,8 @@ field() { jq -r "$1 // empty" <<<"$input"; }
 # 1. An attempt already blocked once this session passes.
 tried="${TMPDIR:-/tmp}/claude-new-branch-$(field .session_id)"
 attempt=$(jq -c .tool_input <<<"$input")
-grep -qxF -- "$attempt" "$tried" 2>/dev/null && exit 0
+touch "$tried"
+grep -qxF -- "$attempt" "$tried" && exit 0
 
 # 2. Find the branches this would create on origin.
 new_branches() {
@@ -35,16 +36,16 @@ new_branches() {
     sed -nE 's|^\*\t[^:]+:refs/heads/(\S+).*|\1|p'
 }
 
-# 3. Allow `preview` and `internal/*`.
-blocked=$(new_branches | grep -vxE 'preview|internal/.+')
+# 3. Allow `preview`, `internal/*` and branches already blocked once.
+blocked=$(new_branches | grep -vxE 'preview|internal/.+' | grep -vxFf "$tried")
 [[ -z $blocked ]] && exit 0
 
-# 4. Block, and record the attempt so a rerun passes.
-echo "$attempt" >>"$tried"
+# 4. Block, and record the attempt and branches so any rerun passes.
+printf '%s\n' "$attempt" "$blocked" >>"$tried"
 cat >&2 <<MSG
 Blocked: this creates $(paste -sd, <<<"$blocked" | sed 's/,/, /g') on origin.
 Pushed branches are permanent, and every one outside internal/ gets a public Cloudflare preview.
 Changes to published files go on \`preview\`; all other work goes on an \`internal/\` branch.
-Check that this follows those rules. If you're sure it does, rerun it unchanged.
+Check that this follows those rules. If you're sure it does, rerun it.
 MSG
 exit 2
