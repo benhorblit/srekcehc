@@ -21,17 +21,25 @@ new_branches() {
     return
   fi
 
-  # Dry-run each `git ... push` in the command, so git itself resolves HEAD,
-  # refspecs, -C and so on. Porcelain output marks new refs with `*`.
+  # Dry-run each `git [options] push ...` in the command, so git itself
+  # resolves HEAD, refspecs and so on. Porcelain output marks new refs with `*`.
+  # Words are passed to git as-is, never through a shell, so nothing else runs.
   cd "$(field .cwd)" 2>/dev/null
-  field .tool_input.command |
-    grep -oE '\bgit\b[^;&|]*\bpush\b[^;&|<>]*' |
-    while read -r push; do
-      push=$(sed -E '
-        s/\s+[0-9]*$//                               # fd of a trailing redirect, e.g. 2>&1
-        s/\s(-u|--set-upstream)\b//g                 # a dry run must not set upstream
-        s/\bpush\b/push --dry-run --porcelain/' <<<"$push")
-      eval "$push" 2>/dev/null
+  field .tool_input.command | tr ';&|' '\n\n\n' |
+    while read -ra word; do
+      [[ ${word[0]##*/} == git ]] || continue
+      i=1 opts=()
+      while [[ ${word[i]} == -* ]]; do                # git options, e.g. -C dir
+        opts+=("${word[i]}")
+        [[ ${word[i]} == -[Cc] ]] && opts+=("${word[++i]}")
+        ((i++))
+      done
+      [[ ${word[i]} == push ]] || continue
+      args=()
+      for a in "${word[@]:i+1}"; do                   # drop -u and redirects
+        [[ $a == -u || $a == --set-upstream || $a == *[\<\>]* ]] || args+=("$a")
+      done
+      git "${opts[@]}" push --dry-run --porcelain "${args[@]}" 2>/dev/null
     done |
     sed -nE 's|^\*\t[^:]+:refs/heads/(\S+).*|\1|p'
 }

@@ -70,3 +70,11 @@ test('checks every push and the MCP create_branch tool', () => {
   assert.equal(run({ branch: 'internal/x' }, t).status, 0);
   assert.equal(run({ branch: 'other' }, t).status, 2);
 });
+
+test('never runs anything but a dry-run push', () => {
+  const head = git('rev-parse', 'HEAD');
+  assert.equal(push('git commit --allow-empty -m "fix push logic"'), 0);
+  assert.equal(git('rev-parse', 'HEAD'), head);
+  push(`git push origin "$(touch ${join(root, 'pwned')})master"`);
+  assert.equal(spawnSync('test', ['-e', join(root, 'pwned')]).status, 1);
+});
