@@ -1,4 +1,4 @@
-// Tests for new-branch.mjs: node --test .claude/hooks/new-branch.test.mjs
+// Tests for new-branch.sh: node --test .claude/hooks/new-branch.test.mjs
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const hook = fileURLToPath(new URL('./new-branch.mjs', import.meta.url));
+const hook = fileURLToPath(new URL('./new-branch.sh', import.meta.url));
 
 // A clone of a local bare origin with one pushed branch, `master`.
 const root = mkdtempSync(join(tmpdir(), 'new-branch-test-'));
@@ -22,7 +22,7 @@ git('push', '-q', 'origin', 'master');
 for (const b of ['feature', 'preview', 'internal/thing']) git('branch', b);
 
 function run(tool_input, { tool_name = 'Bash', session_id = randomUUID() } = {}) {
-  return spawnSync('node', [hook], {
+  return spawnSync('bash', [hook], {
     input: JSON.stringify({ session_id, tool_name, tool_input, cwd: repo }), encoding: 'utf8', timeout: 30000,
   });
 }
