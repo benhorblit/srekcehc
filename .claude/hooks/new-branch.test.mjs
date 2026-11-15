@@ -63,3 +63,10 @@ test('dry run does not push or set upstream', () => {
   assert.equal(git('ls-remote', '--heads', 'origin', 'feature'), '');
   assert.equal(spawnSync('git', ['rev-parse', '--abbrev-ref', 'feature@{u}'], { cwd: repo }).status, 128);
 });
+
+test('checks every push and the MCP create_branch tool', () => {
+  assert.equal(push('git push origin master && git push origin feature'), 2);
+  const t = { tool_name: 'mcp__github__create_branch' };
+  assert.equal(run({ branch: 'internal/x' }, t).status, 0);
+  assert.equal(run({ branch: 'other' }, t).status, 2);
+});
