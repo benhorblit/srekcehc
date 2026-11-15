@@ -43,9 +43,8 @@ blocked=$(new_branches | grep -vxE 'preview|internal/.+' | grep -vxFf "$tried")
 # 4. Block, and record the attempt and branches so any rerun passes.
 printf '%s\n' "$attempt" "$blocked" >>"$tried"
 cat >&2 <<MSG
-Blocked: this creates $(paste -sd, <<<"$blocked" | sed 's/,/, /g') on origin.
-Work off \`preview\` unless the task doesn't change deployed files (then use an \`internal/\` branch) or the user said otherwise.
-If \`preview\` exists and isn't equal to the latest \`master\`, use AskUserQuestion to ask whether to work off \`preview\`, create a new branch, or something else.
-If you're sure this is right, rerun.
+Blocked: this push creates branch $(paste -sd, <<<"$blocked" | sed 's/,/, /g').
+Unless told otherwise, work goes on \`preview\`, or on an \`internal/\` branch if it doesn't touch deployed files.
+If you're sure this branch is correct, run the command again.
 MSG
 exit 2

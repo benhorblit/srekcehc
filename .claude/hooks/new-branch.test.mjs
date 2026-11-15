@@ -44,7 +44,7 @@ test('blocks other new branches, then passes every rerun', () => {
   const session_id = randomUUID();
   const r = run({ command: 'git push -u origin feature' }, { session_id });
   assert.equal(r.status, 2);
-  assert.match(r.stderr, /creates feature /);
+  assert.match(r.stderr, /creates branch feature\./);
   assert.equal(push('git push -u origin feature', { session_id }), 0);
   assert.equal(push('git push origin feature', { session_id }), 0);
   assert.equal(push('git push -u origin feature'), 2);
