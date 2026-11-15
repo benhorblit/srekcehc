@@ -1,9 +1,14 @@
 # What reaches the web
 
-`scripts/build.sh` is the Pages build command. It writes `dist/`, the
-output directory, by copying files from `site/` by name. Nothing reaches
-the web until it is named there, so a file in `site/` the script doesn't
-copy stays unpublished. Never replace the list with `cp -R`.
+`scripts/build.sh` is the Pages build command. It builds the app with
+Vite into `build/`, then writes `dist/`, the output directory, by copying
+files from `build/` and `site/` by name. Nothing reaches the web until it
+is named there, so a file the script doesn't copy stays unpublished.
+Never replace the list with `cp -R`.
+
+Vite's output names are fixed in `vite.config.ts`. If Vite emits any
+file the script doesn't name, the build fails rather than drop it.
+`site/index.html` is Vite's entry and keeps the page's meta tags.
 
 `wrangler.toml` sets which directory gets published. Never change it:
 Cloudflare deploys a branch the moment it's pushed, before anyone
@@ -56,10 +61,12 @@ These ask; they don't enforce. Enforcement is in the dashboard:
 ## CI
 
 `.github/workflows/ci.yml` runs on every PR and push to `master`, as
-three checks:
+four checks:
 
 - **⚙️ Pages config**: `wrangler.toml` names the published directory.
 - **🧩 Functions**: everything in `functions/` parses.
+- **🧪 App**: Prettier, ESLint, svelte-check and Vitest, each in its
+  own log group and on the summary page.
 - **📦 Published files**: builds, lists every published file on the
   run's summary page, and checks the opt-out files, `404.html` and every
   page's meta tags, reporting every problem in one run.
