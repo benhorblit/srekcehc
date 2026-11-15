@@ -36,8 +36,8 @@ new_branches() {
       done
       [[ ${word[i]} == push ]] || continue
       args=()
-      for a in "${word[@]:i+1}"; do                   # drop -u, program options, redirects
-        [[ $a == -u || $a == --set-upstream || $a == --receive-pack* || $a == --exec* || $a == *[\<\>]* ]] || args+=("$a")
+      for a in "${word[@]:i+1}"; do                   # keep only remote and refspecs:
+        [[ $a == -* || $a == *[\<\>]* ]] || args+=("$a") # no options, no redirects
       done
       git "${opts[@]}" push --dry-run --porcelain --no-verify "${args[@]}" 2>/dev/null
     done |

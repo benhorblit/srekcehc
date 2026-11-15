@@ -82,6 +82,8 @@ test('never runs anything but a dry-run push', () => {
   writeFileSync(join(repo, '.git/hooks/pre-push'), `#!/bin/sh\ntouch ${marker}\n`, { mode: 0o755 });
   push(`git push --receive-pack=${script} origin HEAD:rp1`);
   push('git push origin HEAD:rp2');
+  push(`git push --rece=${script} origin HEAD:rp3`);
+  push(`git push --ex=${script} origin HEAD:rp4`);
   unlinkSync(join(repo, '.git/hooks/pre-push'));
   assert.equal(spawnSync('test', ['-e', marker]).status, 1);
 });
