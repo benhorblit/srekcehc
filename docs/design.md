@@ -32,15 +32,13 @@ change.
   tick. Because erasing cascades through copies, that also means none
   at any higher tick. It's checked at that moment: their past pieces
   would come back when the clock runs down. If both players still have
-  pieces after round 27, the game is decided on pieces.
+  pieces after round 27, whoever has more on the board at tick 9 wins.
 - **Playability:** a history scrubber, to look at any tick without
   changing the one being played, and a toggle that draws every piece's
   recorded path.
 
 ## Open
 
-- **Deciding on pieces.** Count live pieces at tick 9 only, or across
-  every tick?
 - **Starting pieces.** More than one each, far fewer than a full board,
   for more chances to change the board by deliberate maneuvering. How
   many, and placed where? Pieces on rows of opposite parity can be
