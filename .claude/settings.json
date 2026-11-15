@@ -9,6 +9,15 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/issue-refs.mjs\" || exit 2"
           }
         ]
+      },
+      {
+        "matcher": "Bash|mcp__github__create_branch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/new-branch.mjs\""
+          }
+        ]
       }
     ],
     "PostToolUse": [
