@@ -1,105 +1,72 @@
 # Design notes
 
-Open questions about the rules. The settled principles are in
-`README.md`; the rules as built are in [app.md](app.md). Move an item
-there once it's decided and built.
+Where the rules are headed. The settled principles are in `README.md`;
+the rules as built are in [app.md](app.md). Move an item there once
+it's built.
 
-## Unlocked time flip
+## Current plan
 
-**Idea:** don't lock the toggle mid-round. Each move goes one tick from
-its piece's own tick, in the direction time runs when that move is
-made. Say both players are at tick 5: player 1 moves forward to 6, then
-player 2 flips time and moves to 4.
+The next version of the game, as decided so far. Each line can still
+change.
 
-**What already works:**
-- The move to 6 is recorded and permanent. It shows whenever the board
-  reaches tick 6.
-- Forking needs no change: each piece forks when it moves against its
-  own direction, so only player 2's piece forks.
+- **Board:** 10×10, international draughts size. Pieces play on dark
+  squares only.
+- **Time bounds, no toggle.** The clock runs between ticks 0 and 9, the
+  9 moves it takes to cross the board. Reaching a bound bounces time,
+  like being kinged in time instead of space. A bounce forks every
+  active piece, as a manual reversal does now.
+- **Two bounces:** rounds 1–9 run forward from tick 0 to 9. Bounce.
+  Rounds 10–18 run back to tick 0. Bounce. Then forward again; what
+  happens after that is open (below).
+- **Rounds:** both players pick one move, which lands at the next tick
+  together. Picks would ideally be secret and revealed at once. A
+  hot-seat prototype can't hide them, so player 1's pick stays visible.
+- **Capture by jumping,** as in checkers: hop over an adjacent enemy
+  piece onto the empty square beyond. A jump moves two rows in one
+  tick, so it also breaks the parity lock under "Players never meet".
+- **Life is linear.** A captured piece is erased from every higher
+  tick, but stays at every lower one, whatever direction it travels.
+  Copies it forked above the capture tick are erased too, so one
+  capture can erase a chain of pieces.
+- **Win:** the game ends when a player has no piece at the present
+  tick. Because erasing cascades through copies, that also means none
+  at any higher tick. It's checked at that moment: their past pieces
+  would come back when the clock runs down.
+- **Playability:** a history scrubber, to look at any tick without
+  changing the one being played, and a toggle that draws every piece's
+  recorded path.
 
-**What it changes:** the players stop sharing a present. Each player
-has their own "now", and principle 1 (one global clock) would need
-rewriting. That raises three problems:
-1. **What the board shows.** It can show only one tick. At tick 6 player
-   2's active piece has no recording, so it isn't drawn.
-2. **Drift.** Every round the directions differ, the gap between the
-   players grows. Pieces that never share a tick can never interact.
-3. **Lopsided collisions.** Player 1's move to 6 blocks anyone moving
-   into 6 later. Player 2's move to 4 blocks player 1 only if player 1
-   comes back to 4.
+## Open
 
-**Open:**
-- Between rounds, does the board show player 1's tick, player 2's, or a
-  scrubber through all ticks?
-- Does anything pull the players back together?
-
-## Life is linear
-
-**Idea:** a piece that's captured is erased from every tick after the
-capture, by the clock, but stays in every tick before it. "After" means
-higher ticks, whatever direction the piece travels.
-
-**Leaning (can change):** copies it forked after the capture tick are
-erased too, so one capture can erase a chain of pieces. This is what
-makes "no pieces now" mean "no pieces at any higher tick": every piece
-above the present tick traces back through one that stood at it.
-
-## Time bounds instead of a toggle
-
-**Idea:** no manual toggle. Time runs between fixed bounds, say tick 0
-and tick 15. Reaching a bound bounces you back, like being kinged in
-time instead of space. The bounce forks the piece, as a manual reversal
-does now.
-
-**Open:**
-- With one shared clock, a bound flips time for both players. Does
-  that fit, or does this need per-player clocks (see "Unlocked time
-  flip")?
-- Where are the bounds, and are they the same for both players?
-
-## Starting pieces
-
-**Idea:** more than one piece each, but far fewer than a full board.
-More pieces give more ways to change the board by deliberate
-maneuvering.
-
-**Open:**
-- How many?
-- Which piece moves? Now each player moves only their newest piece.
-  With several, a player picks one per round.
-- What do the others do that round? They'd stay put and record their
-  square at the new tick, or they'd vanish from it.
-- Placement. Pieces on rows of opposite parity can be adjacent; pieces
-  on rows of the same parity can compete for squares (see "Players
-  never meet" below). Mixing rows gives both.
-
-## Board size
-
-**Idea:** almost certainly bigger than 8×8. Copies pile up as time
-reverses, so the board fills faster than in checkers.
-
-**Open:**
-- How big, and square or not? Trying sizes is cheap: `SIZE` in
-  `game.ts` plus the grid size in `Board.svelte`.
-
-## Playability
-
-- **History scrubber:** look at any tick, past or future, without
-  changing the tick you're playing at. Players can't plan without
-  seeing where the frozen pieces will be.
-- **Path overlay:** a toggle that draws every piece's recorded path on
-  the board.
-
-## Smaller open items
-
+- **After the second bounce.** Leaning: the game ends at tick 9 after
+  the third pass, 27 rounds, as a draw or decided on pieces. The
+  alternative is no more bounces, with the clock running on past 9.
+- **Starting pieces.** More than one each, far fewer than a full board,
+  for more chances to change the board by deliberate maneuvering. How
+  many, and placed where? Pieces on rows of opposite parity can be
+  adjacent; pieces on rows of the same parity can compete for squares.
+- **Moving one piece of several.** A player picks one piece per round.
+  Do the others stay put and record their square at the new tick, or
+  vanish from it?
 - **Overlap at a fork.** For the one tick when a piece forks, the copy
   and the frozen piece share a square. Allow it, or require the first
   move after a fork to leave that square?
 - **Swaps and crossings.** Two pieces can trade squares between ticks,
   or cross each other's diagonal in one step. Both are allowed now.
-- **Players never meet.** With the current starting squares, the two
-  players' row parity is always opposite (see [app.md](app.md) once
-  player 2 is merged). They can stand diagonally adjacent but never
-  compete for a square. Moving one start by a row flips this: they
-  could block each other, but never be adjacent, so capturing would be
+
+## Background
+
+- **Players never meet.** Each round moves every piece one row, so
+  without jumps a piece's row parity is fixed by the tick. With the
+  current starting squares the two players' parity is always opposite:
+  they can stand diagonally adjacent but never compete for a square.
+  Moving one start by a row would flip this, which would make jumps
   impossible.
+
+## Set aside
+
+- **Unlocked time flip.** Each move would go from its piece's own tick,
+  in whatever direction time ran when it was made, so the players
+  stop sharing a present. Recording and forking need no change, but
+  the board can only show one tick, the players drift apart in time,
+  and collisions get lopsided. Time bounds replace the toggle instead.
