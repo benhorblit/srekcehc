@@ -3,8 +3,8 @@
 // which it reruns as `--dry-run --porcelain` so git itself resolves
 // refspecs, upstreams and `HEAD`; a `*` line is a new ref. It also
 // catches the GitHub MCP `create_branch` tool.
-// Rerunning after a block passes once per branch per session: that is
-// how Claude confirms a name it is sure of. If the check itself fails
+// Only the first try at a branch is blocked: any rerun in the same
+// session passes. That is how Claude confirms a name it is sure of. If the check itself fails
 // it lets the call through, since the push would fail the same way.
 import { spawnSync } from 'node:child_process';
 import {
@@ -43,7 +43,8 @@ function newBranches(command, cwd) {
   return found;
 }
 
-// Returns true, once, if this branch was blocked before in this session.
+// Returns true if this branch was blocked before in this session;
+// otherwise records it.
 function confirmed(session, branch) {
   const uid = process.getuid();
   const dir = join(tmpdir(), `claude-new-branch-${uid}`);
@@ -58,11 +59,10 @@ function confirmed(session, branch) {
   try { tried = readFileSync(file, 'utf8').split('\n').filter(Boolean); } catch (e) {
     if (e.code !== 'ENOENT') throw e;
   }
-  const seen = tried.includes(branch);
-  const rest = seen ? tried.filter((b) => b !== branch) : [...tried, branch];
+  if (tried.includes(branch)) return true;
   const fd = openSync(file, constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | constants.O_NOFOLLOW, 0o600);
-  try { writeSync(fd, rest.map((b) => b + '\n').join('')); } finally { closeSync(fd); }
-  return seen;
+  try { writeSync(fd, [...tried, branch].map((b) => b + '\n').join('')); } finally { closeSync(fd); }
+  return false;
 }
 
 try {

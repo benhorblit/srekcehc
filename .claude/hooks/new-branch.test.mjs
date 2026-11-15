@@ -40,13 +40,14 @@ test('passes allowed new branches and existing ones', () => {
   assert.equal(push('git push origin feature:internal/other'), 0);
 });
 
-test('blocks other new branches, then passes a rerun once', () => {
+test('blocks other new branches, then passes every rerun', () => {
   const session_id = randomUUID();
   const r = run({ command: 'git push -u origin feature' }, { session_id });
   assert.equal(r.status, 2);
   assert.match(r.stderr, /`feature`/);
   assert.equal(push('git push -u origin feature', { session_id }), 0);
-  assert.equal(push('git push -u origin feature', { session_id }), 2);
+  assert.equal(push('git push -u origin feature', { session_id }), 0);
+  assert.equal(push('git push -u origin feature'), 2);
 });
 
 test('resolves HEAD, refspecs and compound commands', () => {
