@@ -72,6 +72,15 @@ maneuvering.
   on rows of the same parity can compete for squares (see "Players
   never meet" below). Mixing rows gives both.
 
+## Board size
+
+**Idea:** almost certainly bigger than 8×8. Copies pile up as time
+reverses, so the board fills faster than in checkers.
+
+**Open:**
+- How big, and square or not? `SIZE` in `game.ts` is one constant, so
+  trying sizes is cheap.
+
 ## Playability
 
 - **History scrubber:** look at any tick, past or future, without
