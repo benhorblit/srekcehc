@@ -29,17 +29,17 @@ new_branches() {
     while read -ra word; do
       [[ ${word[0]##*/} == git ]] || continue
       i=1 opts=()
-      while [[ ${word[i]} == -* ]]; do                # git options, e.g. -C dir
-        opts+=("${word[i]}")
-        [[ ${word[i]} == -[Cc] ]] && opts+=("${word[++i]}")
+      while [[ ${word[i]} == -* ]]; do                # git options: keep only -C dir
+        [[ ${word[i]} == -C ]] && opts+=(-C "${word[i+1]}")
+        [[ ${word[i]} == -[Cc] ]] && ((i++))
         ((i++))
       done
       [[ ${word[i]} == push ]] || continue
       args=()
-      for a in "${word[@]:i+1}"; do                   # drop -u and redirects
-        [[ $a == -u || $a == --set-upstream || $a == *[\<\>]* ]] || args+=("$a")
+      for a in "${word[@]:i+1}"; do                   # drop -u, program options, redirects
+        [[ $a == -u || $a == --set-upstream || $a == --receive-pack* || $a == --exec* || $a == *[\<\>]* ]] || args+=("$a")
       done
-      git "${opts[@]}" push --dry-run --porcelain "${args[@]}" 2>/dev/null
+      git "${opts[@]}" push --dry-run --porcelain --no-verify "${args[@]}" 2>/dev/null
     done |
     sed -nE 's|^\*\t[^:]+:refs/heads/(\S+).*|\1|p'
 }

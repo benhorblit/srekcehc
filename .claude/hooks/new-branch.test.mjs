@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -77,4 +77,11 @@ test('never runs anything but a dry-run push', () => {
   assert.equal(git('rev-parse', 'HEAD'), head);
   push(`git push origin "$(touch ${join(root, 'pwned')})master"`);
   assert.equal(spawnSync('test', ['-e', join(root, 'pwned')]).status, 1);
+  const marker = join(root, 'ran'), script = join(root, 'rp.sh');
+  writeFileSync(script, `#!/bin/sh\ntouch ${marker}\nexec git-receive-pack "$@"\n`, { mode: 0o755 });
+  writeFileSync(join(repo, '.git/hooks/pre-push'), `#!/bin/sh\ntouch ${marker}\n`, { mode: 0o755 });
+  push(`git push --receive-pack=${script} origin HEAD:rp1`);
+  push('git push origin HEAD:rp2');
+  unlinkSync(join(repo, '.git/hooks/pre-push'));
+  assert.equal(spawnSync('test', ['-e', marker]).status, 1);
 });
