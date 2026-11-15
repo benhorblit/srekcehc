@@ -1,6 +1,7 @@
 # Checks every PR against docs/publishing.md: wrangler.toml publishes the
-# right directory, the functions parse, and everything published keeps
-# crawlers out. Each job is its own check on the PR.
+# right directory, the functions parse, the app passes its checks, and
+# everything published keeps crawlers out. Each job is its own check on
+# the PR.
 name: CI
 
 on:
@@ -62,11 +63,51 @@ jobs:
           done
           exit $fail
 
+  app:
+    name: 🧪 App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+
+      # Every check runs, so one run reports every problem.
+      - name: Format, lint, types, tests
+        run: |
+          fail=0
+          echo "### 🧪 App checks" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          check() {
+            local name=$1; shift
+            echo "::group::$name"
+            if "$@"; then
+              echo "| $name | ✅ |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::error title=$name failed::Run \`$*\` locally."
+              echo "| $name | ❌ |" >> "$GITHUB_STEP_SUMMARY"
+              fail=1
+            fi
+            echo "::endgroup::"
+          }
+          check Prettier npx prettier --check .
+          check ESLint npx eslint .
+          check svelte-check npx svelte-check --tsconfig ./tsconfig.json --output human
+          check Vitest npx vitest run
+          exit $fail
+
   published:
     name: 📦 Published files
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
 
       # The Cloudflare Pages build command, when there is one.
       - name: Build

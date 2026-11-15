@@ -1,0 +1,12 @@
+old/
+dist/
+build/
+node_modules/
+package-lock.json
+site/*.html
+site/*.txt
+site/_headers
+site/.well-known/
+functions/
+.claude/
+*.md
