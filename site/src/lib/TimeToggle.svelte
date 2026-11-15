@@ -1,6 +1,6 @@
 <script lang="ts">
-  type Props = { forward: boolean; ontoggle: () => void };
-  let { forward, ontoggle }: Props = $props();
+  type Props = { forward: boolean; disabled?: boolean; ontoggle: () => void };
+  let { forward, disabled = false, ontoggle }: Props = $props();
 </script>
 
 <button
@@ -9,6 +9,7 @@
   aria-pressed={!forward}
   aria-label="Reverse time"
   title={forward ? "Time runs forward" : "Time runs backward"}
+  {disabled}
   onclick={ontoggle}
 >
   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -45,6 +46,11 @@
     transform: rotate(180deg);
     background: var(--bg);
     color: var(--fg);
+  }
+
+  .toggle:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
   }
 
   .toggle:focus-visible {

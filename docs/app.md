@@ -15,14 +15,31 @@ A Svelte 5 + TypeScript app, built with Vite. The rules are in
 
 ## Rules as built
 
-- One piece starts at 4,8 (column, row; 1-indexed from the top left).
+- Two players, one piece each: player 1 (black) starts at 4,8, player 2
+  (red) at 5,1 (column, row; 1-indexed from the top left).
+- A round: player 1 picks a move, shown as a dashed outline, then
+  player 2 picks. Both land at the next tick together.
 - A move is one diagonal step, any of the four, onto a square no piece
-  holds at the next tick. Click a marked square to move.
-- The toggle reverses time. The next move then freezes the active piece
-  and a copy moves instead. The copy starts with only its current square,
-  not the old piece's history.
-- Pieces moving backward in time are drawn inverted. The active piece is
-  ringed.
+  holds at the next tick. Player 2 also can't pick player 1's square.
+  Click a marked square to move.
+- No capturing yet.
+- The toggle reverses time for both players. Player 1 flips it for the
+  current round, before picking. Player 2 flips it for the next round,
+  since player 1 has already moved in this one, and that locks the
+  toggle for player 1's next turn.
+- A round that runs against a piece's direction freezes it, and a copy
+  moves instead. The copy starts with only its current square, not the
+  old piece's history.
+- Pieces moving backward in time are drawn inverted. The piece whose
+  player is picking is ringed.
+
+### Pieces of different players never meet
+
+Each round moves every active piece one row, so a piece's row parity
+is fixed by the tick: player 1's is `7 + tick`, player 2's is `tick`,
+always opposite. Pieces of different players can stand diagonally
+adjacent but can never want the same square. The rule that keeps
+player 2 off player 1's pick exists for when starting squares change.
 
 ## Commands
 

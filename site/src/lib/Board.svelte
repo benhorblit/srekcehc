@@ -20,43 +20,46 @@
     y: Math.floor(i / SIZE),
   }));
 
+  const same = (a: Square, b: Square) => a.x === b.x && a.y === b.y;
+
   const here = $derived(piecesAt(game, game.tick));
+  const moving = $derived(active(game, game.turn));
 
   function pieceOn(s: Square) {
-    const piece = here.findLast(
-      (p) => p.path[game.tick].x === s.x && p.path[game.tick].y === s.y,
-    );
+    const piece = here.findLast((p) => same(p.path[game.tick], s));
     if (!piece) return null;
+    const own = game.pieces.filter((p) => p.player === piece.player);
     return {
-      label: game.pieces.indexOf(piece) + 1,
+      player: piece.player,
+      label: own.indexOf(piece) + 1,
       forward: piece.forward,
-      active: piece === active(game),
+      moving: piece === moving,
     };
-  }
-
-  function isTarget(s: Square) {
-    return targets.some((t) => t.x === s.x && t.y === s.y);
   }
 </script>
 
 <div class="board" role="grid" aria-label="Board">
   {#each squares as s (`${s.x},${s.y}`)}
     {@const piece = pieceOn(s)}
-    {@const target = isTarget(s)}
+    {@const target = targets.some((t) => same(t, s))}
+    {@const pending = game.pending && same(game.pending, s)}
     <button
       class="square"
       class:dark={isDark(s)}
       class:target
       disabled={!target}
-      aria-label={`${s.x + 1},${s.y + 1}${piece ? ` piece ${piece.label}` : ""}`}
+      aria-label={`${s.x + 1},${s.y + 1}${piece ? ` player ${piece.player} piece ${piece.label}` : ""}${pending ? " player 1 pick" : ""}`}
       onclick={() => onmove(s)}
     >
       {#if piece}
         <span
-          class="piece"
+          class="piece p{piece.player}"
           class:inverted={!piece.forward}
-          class:active={piece.active}>{piece.label}</span
+          class:moving={piece.moving}>{piece.label}</span
         >
+      {/if}
+      {#if pending}
+        <span class="piece p1 ghost"></span>
       {/if}
     </button>
   {/each}
@@ -109,6 +112,8 @@
   }
 
   .piece {
+    --fill: #1a1a1a;
+    --edge: #f0f0f0;
     width: 72%;
     aspect-ratio: 1;
     border-radius: 50%;
@@ -116,19 +121,31 @@
     place-items: center;
     font-weight: 600;
     font-size: clamp(0.7rem, 2.5vw, 1rem);
-    background: #1a1a1a;
-    color: #f0f0f0;
-    border: 2px solid #f0f0f0;
+    background: var(--fill);
+    color: var(--edge);
+    border: 2px solid var(--edge);
     box-sizing: border-box;
   }
 
-  .piece.inverted {
-    background: #f0f0f0;
-    color: #1a1a1a;
-    border-color: #1a1a1a;
+  .piece.p2 {
+    --fill: #c62828;
   }
 
-  .piece.active {
+  /* Moving backward in time: fill and edge swap. */
+  .piece.inverted {
+    background: var(--edge);
+    color: var(--fill);
+    border-color: var(--fill);
+  }
+
+  .piece.ghost {
+    position: absolute;
+    background: none;
+    border: 2px dashed var(--fill);
+    opacity: 0.7;
+  }
+
+  .piece.moving {
     box-shadow: 0 0 0 3px var(--target);
   }
 </style>
