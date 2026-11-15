@@ -36,13 +36,12 @@ rewriting. That raises three problems:
 ## Life is linear
 
 **Idea:** a piece that's captured is erased from every tick after the
-capture, but stays in every tick before it.
+capture, by the clock, but stays in every tick before it. "After" means
+higher ticks, whatever direction the piece travels.
 
 **Open:**
-- "After" by the clock, or by the piece's own direction? For a piece
-  moving backward in time, its future is the lower ticks.
-- What happens to the copies it forked after the capture? If the copy
-  goes too, a capture can erase a chain of pieces.
+- What happens to the copies it forked? If they go too, a capture can
+  erase a chain of pieces.
 
 ## Time bounds instead of a toggle
 
