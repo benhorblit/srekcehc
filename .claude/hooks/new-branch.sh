@@ -25,14 +25,18 @@ if [[ $(get .tool_name) == mcp__github__create_branch ]]; then
 else
   branches=$(get .tool_input.command | tr ';&|' '\n' | tr -d "\"'" |
     while read -ra w; do
+      while [[ ${w[0]} == *=* || ${w[0]} == env ]]; do w=("${w[@]:1}"); done  # VAR=x, env
       [[ ${w[0]##*/} == git ]] || continue
       i=1
       while [[ ${w[i]} == -[Cc] ]]; do ((i += 2)); done
+      # A branch made earlier in the command becomes HEAD for later pushes.
+      [[ ${w[i]} == checkout && ${w[i+1]} == -[bB] ||
+        ${w[i]} == switch && ${w[i+1]} == -[cC] ]] && cur=${w[i+2]}
       [[ ${w[i]} == push ]] || continue
       args=()
       for a in "${w[@]:i+1}"; do [[ $a == -* || $a == *[\<\>]* ]] || args+=("$a"); done
       refs=("${args[@]:1}")
-      for r in "${refs[@]:-HEAD}"; do echo "${r##*:}"; done
+      for r in "${refs[@]:-HEAD}"; do r=${r##*:}; [[ $r == HEAD ]] && r=${cur:-HEAD}; echo "$r"; done
     done)
   [[ -n $branches ]] || exit 0
   while IFS= read -r ref; do                          # current and origin branches

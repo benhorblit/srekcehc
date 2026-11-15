@@ -61,6 +61,10 @@ test('resolves HEAD, refspecs and compound commands', () => {
   assert.equal(push('git push -u origin'), 2);
   assert.equal(push("git push origin 'HEAD:x' 2>/dev/null"), 2);
   git('switch', '-q', 'master');
+  assert.equal(push('git checkout -b fresh && git push -u origin HEAD'), 2);
+  assert.equal(push('git switch -c internal/y && git push -u origin HEAD'), 0);
+  assert.equal(push('GIT_TRACE=0 git push origin HEAD:fresh2'), 2);
+  assert.equal(push('env git push origin HEAD:fresh3'), 2);
   assert.equal(push('git push'), 0);
 });
 
