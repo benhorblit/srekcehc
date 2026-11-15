@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   active,
+  canReverse,
   move,
   moves,
   newGame,
@@ -8,6 +9,7 @@ import {
   reverse,
   type Game,
   type Square,
+  upcoming,
 } from "./game";
 
 /** Plays one round: player 1's move, then player 2's. */
@@ -68,10 +70,6 @@ describe("rounds", () => {
     expect(active(g, 1).path[1]).toEqual(A);
     expect(active(g, 2).path[1]).toEqual(B);
   });
-
-  it("can't reverse mid-round", () => {
-    expect(() => reverse(move(newGame(), A))).toThrow();
-  });
 });
 
 describe("reversing time", () => {
@@ -109,5 +107,33 @@ describe("reversing time", () => {
     expect(moves(g)).not.toContainEqual({ x: 3, y: 7 });
     g = move(g, { x: 1, y: 5 });
     expect(moves(g)).not.toContainEqual({ x: 4, y: 0 });
+  });
+});
+
+describe("player 2 reversing time", () => {
+  it("flips the next round, not this one", () => {
+    let g = reverse(move(newGame(), A));
+    expect(g.forward).toBe(true);
+    expect(upcoming(g)).toBe(false);
+    g = move(g, B);
+    expect(g.tick).toBe(1);
+    expect(g.forward).toBe(false);
+  });
+
+  it("locks the toggle for player 1's next turn only", () => {
+    let g = move(reverse(move(newGame(), A)), B);
+    expect(canReverse(g)).toBe(false);
+    expect(() => reverse(g)).toThrow();
+    g = move(g, { x: 1, y: 5 });
+    expect(canReverse(g)).toBe(true);
+    g = move(g, { x: 6, y: 2 });
+    expect(canReverse(g)).toBe(true);
+  });
+
+  it("can undo its own flip", () => {
+    let g = reverse(reverse(move(newGame(), A)));
+    g = move(g, B);
+    expect(g.forward).toBe(true);
+    expect(canReverse(g)).toBe(true);
   });
 });

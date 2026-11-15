@@ -23,9 +23,13 @@ A Svelte 5 + TypeScript app, built with Vite. The rules are in
   holds at the next tick. Player 2 also can't pick player 1's square.
   Click a marked square to move.
 - No capturing yet.
-- The toggle reverses time for both players, between rounds only. The
-  next round freezes each active piece and a copy moves instead. The
-  copy starts with only its current square, not the old piece's history.
+- The toggle reverses time for both players. Player 1 flips it for the
+  current round, before picking. Player 2 flips it for the next round,
+  since player 1 has already moved in this one, and that locks the
+  toggle for player 1's next turn.
+- A round that runs against a piece's direction freezes it, and a copy
+  moves instead. The copy starts with only its current square, not the
+  old piece's history.
 - Pieces moving backward in time are drawn inverted. The piece whose
   player is picking is ringed.
 

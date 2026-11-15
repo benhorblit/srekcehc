@@ -24,6 +24,10 @@ export type Game = {
   turn: Player;
   /** Player 1's pick, held until player 2 picks and the round resolves. */
   pending: Square | null;
+  /** Player 2 flipped time for the next round. */
+  queued: boolean;
+  /** Player 2 flipped time last round, so player 1 can't this round. */
+  locked: boolean;
 };
 
 export function newGame(): Game {
@@ -36,6 +40,8 @@ export function newGame(): Game {
     ],
     turn: 1,
     pending: null,
+    queued: false,
+    locked: false,
   };
 }
 
@@ -90,7 +96,9 @@ export function move(game: Game, to: Square): Game {
   if (!moves(game).some((s) => same(s, to))) {
     throw new Error(`illegal move to ${to.x},${to.y}`);
   }
-  if (game.turn === 1) return { ...game, turn: 2, pending: to };
+  if (game.turn === 1) {
+    return { ...game, turn: 2, pending: to, locked: false };
+  }
 
   const tick = next(game);
   const pieces = [...game.pieces];
@@ -112,11 +120,34 @@ export function move(game: Game, to: Square): Game {
     };
     pieces[pieces.lastIndexOf(piece)] = moved;
   }
-  return { ...game, tick, pieces, turn: 1, pending: null };
+  return {
+    ...game,
+    tick,
+    pieces,
+    turn: 1,
+    pending: null,
+    forward: game.queued ? !game.forward : game.forward,
+    queued: false,
+    locked: game.queued,
+  };
 }
 
-/** Flips time's direction. Only between rounds. */
+/** Whether the player to pick may flip time now. */
+export function canReverse(game: Game): boolean {
+  return game.turn === 2 || !game.locked;
+}
+
+/** The direction the player to pick is setting: this round's for player
+ * 1, the next round's for player 2. */
+export function upcoming(game: Game): boolean {
+  return game.queued ? !game.forward : game.forward;
+}
+
+/** Flips time. Player 1 flips this round, unless player 2 flipped last
+ * round. Player 2 flips the next round, since player 1 has already moved
+ * in this one, and that locks it for player 1. */
 export function reverse(game: Game): Game {
-  if (game.pending) throw new Error("can't reverse time mid-round");
+  if (!canReverse(game)) throw new Error("player 2 set time this round");
+  if (game.turn === 2) return { ...game, queued: !game.queued };
   return { ...game, forward: !game.forward };
 }

@@ -1,7 +1,15 @@
 <script lang="ts">
   import Board from "./lib/Board.svelte";
   import TimeToggle from "./lib/TimeToggle.svelte";
-  import { move, moves, newGame, reverse, type Square } from "./lib/game";
+  import {
+    canReverse,
+    move,
+    moves,
+    newGame,
+    reverse,
+    upcoming,
+    type Square,
+  } from "./lib/game";
 
   let game = $state(newGame());
   const targets = $derived(moves(game));
@@ -15,8 +23,8 @@
   <Board {game} {targets} onmove={play} />
   <div class="controls">
     <TimeToggle
-      forward={game.forward}
-      disabled={game.pending !== null}
+      forward={upcoming(game)}
+      disabled={!canReverse(game)}
       ontoggle={() => (game = reverse(game))}
     />
     <span class="status">
@@ -25,6 +33,15 @@
       <span class="tick">· tick {game.tick}</span>
     </span>
   </div>
+  <p class="note">
+    {#if game.locked}
+      Player 2 set time for this round.
+    {:else if game.queued}
+      Time flips next round.
+    {:else}
+      &nbsp;
+    {/if}
+  </p>
 </main>
 
 <style>
@@ -60,6 +77,12 @@
 
   .swatch.p2 {
     background: #c62828;
+  }
+
+  .note {
+    margin: -0.75rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
   }
 
   .tick {
