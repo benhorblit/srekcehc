@@ -31,6 +31,8 @@ const push = (command, opts) => run({ command }, opts).status;
 test('passes commands that are not pushes', () => {
   assert.equal(push('git status'), 0);
   assert.equal(push('echo push'), 0);
+  assert.equal(push('git push --delete origin master'), 0);
+  assert.equal(push('git push origin :master'), 0);
 });
 
 test('passes allowed new branches and existing ones', () => {
@@ -55,10 +57,18 @@ test('resolves HEAD, refspecs and compound commands', () => {
   assert.equal(push('git push origin HEAD'), 2);
   assert.equal(push(`cd ${repo} && git push -u origin HEAD 2>&1 | tail -2`), 2);
   assert.equal(push(`git -C ${repo} push origin preview:other`), 2);
+  assert.equal(push('git push'), 2);
+  assert.equal(push('git push -u origin'), 2);
+  assert.equal(push("git push origin 'HEAD:x' 2>/dev/null"), 2);
   git('switch', '-q', 'master');
+  assert.equal(push('git checkout -b fresh && git push -u origin HEAD'), 2);
+  assert.equal(push('git switch -c internal/y && git push -u origin HEAD'), 0);
+  assert.equal(push('GIT_TRACE=0 git push origin HEAD:fresh2'), 2);
+  assert.equal(push('env git push origin HEAD:fresh3'), 2);
+  assert.equal(push('git push'), 0);
 });
 
-test('dry run does not push or set upstream', () => {
+test('does not push or set upstream', () => {
   push('git push -u origin feature');
   assert.equal(git('ls-remote', '--heads', 'origin', 'feature'), '');
   assert.equal(spawnSync('git', ['rev-parse', '--abbrev-ref', 'feature@{u}'], { cwd: repo }).status, 128);
@@ -71,7 +81,7 @@ test('checks every push and the MCP create_branch tool', () => {
   assert.equal(run({ branch: 'other' }, t).status, 2);
 });
 
-test('never runs anything but a dry-run push', () => {
+test('never runs anything from the command', () => {
   const head = git('rev-parse', 'HEAD');
   assert.equal(push('git commit --allow-empty -m "fix push logic"'), 0);
   assert.equal(git('rev-parse', 'HEAD'), head);
@@ -82,6 +92,12 @@ test('never runs anything but a dry-run push', () => {
   writeFileSync(join(repo, '.git/hooks/pre-push'), `#!/bin/sh\ntouch ${marker}\n`, { mode: 0o755 });
   push(`git push --receive-pack=${script} origin HEAD:rp1`);
   push('git push origin HEAD:rp2');
+  push(`git push --rece=${script} origin HEAD:rp3`);
+  push(`git push --ex=${script} origin HEAD:rp4`);
+  push(`git -c core.sshCommand=${script} -c core.fsmonitor=${script} push origin HEAD:rp5`);
+  push(`git -C "$(touch ${marker})" push origin HEAD`);
+  push(`git push origin \`touch ${marker}\`rp6`);
   unlinkSync(join(repo, '.git/hooks/pre-push'));
   assert.equal(spawnSync('test', ['-e', marker]).status, 1);
+  assert.equal(git('ls-remote', '--heads', 'origin').trim().split('\n').length, 1);
 });
