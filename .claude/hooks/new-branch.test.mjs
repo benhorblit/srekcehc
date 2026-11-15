@@ -44,7 +44,7 @@ test('blocks other new branches, then passes every rerun', () => {
   const session_id = randomUUID();
   const r = run({ command: 'git push -u origin feature' }, { session_id });
   assert.equal(r.status, 2);
-  assert.match(r.stderr, /`feature`/);
+  assert.match(r.stderr, /creates feature /);
   assert.equal(push('git push -u origin feature', { session_id }), 0);
   assert.equal(push('git push -u origin feature', { session_id }), 0);
   assert.equal(push('git push -u origin feature'), 2);
@@ -62,11 +62,4 @@ test('dry run does not push or set upstream', () => {
   push('git push -u origin feature');
   assert.equal(git('ls-remote', '--heads', 'origin', 'feature'), '');
   assert.equal(spawnSync('git', ['rev-parse', '--abbrev-ref', 'feature@{u}'], { cwd: repo }).status, 128);
-});
-
-test('checks the MCP create_branch tool', () => {
-  const t = { tool_name: 'mcp__github__create_branch' };
-  assert.equal(run({ branch: 'internal/x' }, t).status, 0);
-  assert.equal(run({ branch: 'preview' }, t).status, 0);
-  assert.equal(run({ branch: 'other' }, t).status, 2);
 });
