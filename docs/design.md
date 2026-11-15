@@ -16,8 +16,8 @@ change.
   like being kinged in time instead of space. A bounce forks every
   active piece, as a manual reversal does now.
 - **Two bounces:** rounds 1–9 run forward from tick 0 to 9. Bounce.
-  Rounds 10–18 run back to tick 0. Bounce. Then forward again; what
-  happens after that is open (below).
+  Rounds 10–18 run back to tick 0. Bounce. Rounds 19–27 run forward
+  to tick 9, and the game ends there.
 - **Rounds:** both players pick one move, which lands at the next tick
   together. Picks would ideally be secret and revealed at once. A
   hot-seat prototype can't hide them, so player 1's pick stays visible.
@@ -28,19 +28,19 @@ change.
   tick, but stays at every lower one, whatever direction it travels.
   Copies it forked above the capture tick are erased too, so one
   capture can erase a chain of pieces.
-- **Win:** the game ends when a player has no piece at the present
+- **Win:** the game ends early when a player has no piece at the present
   tick. Because erasing cascades through copies, that also means none
   at any higher tick. It's checked at that moment: their past pieces
-  would come back when the clock runs down.
+  would come back when the clock runs down. If both players still have
+  pieces after round 27, the game is decided on pieces.
 - **Playability:** a history scrubber, to look at any tick without
   changing the one being played, and a toggle that draws every piece's
   recorded path.
 
 ## Open
 
-- **After the second bounce.** Leaning: the game ends at tick 9 after
-  the third pass, 27 rounds, as a draw or decided on pieces. The
-  alternative is no more bounces, with the clock running on past 9.
+- **Deciding on pieces.** Count live pieces at tick 9 only, or across
+  every tick?
 - **Starting pieces.** More than one each, far fewer than a full board,
   for more chances to change the board by deliberate maneuvering. How
   many, and placed where? Pieces on rows of opposite parity can be
