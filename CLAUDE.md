@@ -72,8 +72,14 @@ Do all work on a single branch unless told otherwise. Branch names are 4
 words max. Never work on or push an auto-created `claude/*` branch.
 
 Every pushed branch gets a Cloudflare Pages preview, except branches
-starting with `internal/`. Start every branch name with `internal/`
-unless it changes site content that should be previewable.
+starting with `internal/`.
+
+Work that changes published files (anything `scripts/build.sh` copies
+into `dist/`) goes on the branch `preview` unless I say otherwise. If
+`preview` already exists, locally or on origin, and is not equal to the
+latest `master`, use the AskUserQuestion tool to ask whether to work on
+`preview`, create a new branch, or something else. All other work goes
+on a new branch starting with `internal/`.
 
 Prefer rebase: `git pull --rebase`, and rebase onto `master` rather than
 merging it in when feasible.
