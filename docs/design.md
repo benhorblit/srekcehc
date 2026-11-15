@@ -33,6 +33,38 @@ rewriting. That raises three problems:
   scrubber through all ticks?
 - Does anything pull the players back together?
 
+## Life is linear
+
+**Idea:** a piece that's captured is erased from every tick after the
+capture, but stays in every tick before it.
+
+**Open:**
+- "After" by the clock, or by the piece's own direction? For a piece
+  moving backward in time, its future is the lower ticks.
+- What happens to the copies it forked after the capture? If the copy
+  goes too, a capture can erase a chain of pieces.
+
+## Time bounds instead of a toggle
+
+**Idea:** no manual toggle. Time runs between fixed bounds, say tick 0
+and tick 15. Reaching a bound bounces you back, like being kinged in
+time instead of space. The bounce forks the piece, as a manual reversal
+does now.
+
+**Open:**
+- With one shared clock, a bound flips time for both players. Does
+  that fit, or does this need per-player clocks (see "Unlocked time
+  flip")?
+- Where are the bounds, and are they the same for both players?
+
+## Playability
+
+- **History scrubber:** look at any tick, past or future, without
+  changing the tick you're playing at. Players can't plan without
+  seeing where the frozen pieces will be.
+- **Path overlay:** a toggle that draws every piece's recorded path on
+  the board.
+
 ## Smaller open items
 
 - **Overlap at a fork.** For the one tick when a piece forks, the copy
