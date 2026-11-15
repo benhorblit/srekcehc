@@ -1,5 +1,5 @@
 # pages_build_output_dir is what gets published. Never change it.
 
-name = "{{SITE_NAME}}"
+name = "srekcehc"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-10-01"
