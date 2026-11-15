@@ -78,8 +78,8 @@ maneuvering.
 reverses, so the board fills faster than in checkers.
 
 **Open:**
-- How big, and square or not? `SIZE` in `game.ts` is one constant, so
-  trying sizes is cheap.
+- How big, and square or not? Trying sizes is cheap: `SIZE` in
+  `game.ts` plus the grid size in `Board.svelte`.
 
 ## Playability
 
