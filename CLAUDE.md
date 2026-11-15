@@ -90,6 +90,8 @@ can't do the job.
 
 Open a PR once a branch's work is ready, without being asked.
 
+Only squash merging is allowed. Never use merge commits or rebase merges.
+
 If a PR addresses an issue, its title ends with that issue's number,
 e.g. `[#8]`. No other prefixes on PR titles or commits.
 
