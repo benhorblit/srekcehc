@@ -39,9 +39,10 @@ rewriting. That raises three problems:
 capture, by the clock, but stays in every tick before it. "After" means
 higher ticks, whatever direction the piece travels.
 
-**Open:**
-- What happens to the copies it forked? If they go too, a capture can
-  erase a chain of pieces.
+**Leaning (can change):** copies it forked after the capture tick are
+erased too, so one capture can erase a chain of pieces. This is what
+makes "no pieces now" mean "no pieces at any higher tick": every piece
+above the present tick traces back through one that stood at it.
 
 ## Time bounds instead of a toggle
 
